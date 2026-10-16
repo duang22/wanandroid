@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">WanAndroidLearn</string>
+    <string name="home_title">玩安卓</string>
+    <string name="retry">重新加载</string>
+    <string name="empty_articles">暂时没有文章</string>
+    <string name="unknown_author">未知作者</string>
+    <string name="unknown_time">时间未知</string>
+    <string name="unknown_title">未命名文章</string>
+    <string name="unknown_category">未分类</string>
+</resources>

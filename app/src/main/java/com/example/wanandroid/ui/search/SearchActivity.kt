@@ -92,6 +92,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun renderHotKeywords(keywords: List<HotKeyword>) {
+        //根据列表生成标签
         binding.layoutHotKeywords.isVisible = keywords.isNotEmpty()
         binding.chipHotKeywords.removeAllViews()
         keywords.forEach { keyword ->

@@ -9,7 +9,10 @@ import com.example.wanandroid.Article
 import com.example.wanandroid.R
 import com.example.wanandroid.databinding.ItemArticleBinding
 
-class ArticleAdapter : RecyclerView.Adapter<ArticleAdapter.ArticleViewHolder>() {
+class ArticleAdapter(
+    private val onArticleClick: (Article) -> Unit
+    //这是个函数，保存 article 不返回
+) : RecyclerView.Adapter<ArticleAdapter.ArticleViewHolder>() {
     private var articles: List<Article> = emptyList()
 
     init {
@@ -35,7 +38,11 @@ class ArticleAdapter : RecyclerView.Adapter<ArticleAdapter.ArticleViewHolder>() 
     }
 
     override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
-        holder.bind(articles[position])
+        val article=articles[position]
+        holder.bind(article)
+        holder.itemView.setOnClickListener {
+            onArticleClick(article)
+        }
     }
 
     override fun getItemCount(): Int = articles.size

@@ -7,4 +7,15 @@
     <string name="unknown_time">时间未知</string>
     <string name="unknown_title">未命名文章</string>
     <string name="unknown_category">未分类</string>
+    <string name="article_back">返回</string>
+    <string name="article_browser">浏览器</string>
+    <string name="article_loading">正在加载文章</string>
+    <string name="article_invalid_url">文章链接无效</string>
+    <string name="article_network_error">网页加载失败，请检查网络后重试</string>
+    <string name="article_http_error">服务器响应异常：HTTP %1$d</string>
+    <string name="article_ssl_error">网页证书校验失败，请稍后重试</string>
+    <string name="article_http_external">此链接使用 HTTP，请点击右上角“浏览器”外部打开</string>
+    <string name="article_unsupported_link">暂不支持打开此类链接</string>
+    <string name="article_no_browser">未找到可以打开网页的应用</string>
+    <string name="article_waiting_url">这里稍后显示文章链接</string>
 </resources>

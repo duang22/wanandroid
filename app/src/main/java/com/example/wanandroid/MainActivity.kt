@@ -1,6 +1,8 @@
 package com.example.wanandroid
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -12,11 +14,38 @@ import com.example.wanandroid.databinding.ActivityMainBinding
 import com.example.wanandroid.ui.home.ArticleAdapter
 import com.example.wanandroid.ui.home.HomeUiState
 import com.example.wanandroid.ui.home.HomeViewModel
+import com.example.wanandroidlearn.ui.article.ArticleActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: HomeViewModel
-    private val articleAdapter = ArticleAdapter()
+//    private val articleAdapter = ArticleAdapter { article ->
+//        Toast.makeText(
+//            this,
+//            article.title.orEmpty(),
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+//    private val articleAdapter = ArticleAdapter { article ->
+//        val url = article.link.orEmpty().trim()
+//        if (url.isBlank()) {
+//            Toast.makeText(this, R.string.article_invalid_url, Toast.LENGTH_SHORT).show()
+//        } else {
+//            ArticleActivity.start(
+//                activity = this,
+//                title = article.title.orEmpty(),
+//                url = url
+//            )
+//        }
+//    }
+    private val articleAdapter = ArticleAdapter(
+        onArticleClick = { clickedArticle ->
+            val intent = Intent(this, ArticleActivity::class.java)
+            intent.putExtra("article_title", clickedArticle.title.orEmpty())
+            intent.putExtra("article_url", clickedArticle.link.orEmpty())
+            startActivity(intent)
+        }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

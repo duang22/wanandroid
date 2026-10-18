@@ -6,15 +6,30 @@
     android:background="?attr/colorSurface"
     android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="#45BCEB"
-        android:gravity="center"
-        android:text="@string/home_title"
-        android:textColor="@color/white"
-        android:textSize="20dp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#45BCEB">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/home_title"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/button_search_articles"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/search_action"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
 <!--        android:textColor="#FFFFFF"-->
 <!--        android:textSize="20sp"-->
 <!--        -->

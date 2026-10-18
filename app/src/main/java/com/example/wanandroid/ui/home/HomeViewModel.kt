@@ -12,15 +12,17 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-
+import com.example.wanandroid.data.model.HomeBanner
 class HomeViewModel : ViewModel() {
     private val repository = HomeRepository()
     private val _uiState = MutableLiveData<HomeUiState>()
     val uiState: LiveData<HomeUiState> = _uiState
     private var requestJob: Job? = null
-
+    private val _banners = MutableLiveData<List<HomeBanner>>(emptyList())
+    val banners: LiveData<List<HomeBanner>> = _banners
     init {
         loadArticles()
+        loadBanners()
     }
 
     fun loadArticles() {
@@ -46,6 +48,17 @@ class HomeViewModel : ViewModel() {
                     else -> "加载失败，请稍后重试"
                 }
                 _uiState.value = HomeUiState.Error(message)
+            }
+        }
+    }
+    private fun loadBanners() {
+        viewModelScope.launch {
+            try {
+                _banners.value = repository.getBanners()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Log.e("HomeBanner", "loadBanners failed", error)
             }
         }
     }

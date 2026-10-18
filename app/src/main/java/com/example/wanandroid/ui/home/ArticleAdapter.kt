@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.wanandroid.Article
 import com.example.wanandroid.R
 import com.example.wanandroid.databinding.ItemArticleBinding
-
+import androidx.core.view.isVisible
 class ArticleAdapter(
     private val onArticleClick: (Article) -> Unit
     //这是个函数，保存 article 不返回
@@ -23,7 +23,7 @@ class ArticleAdapter(
     fun submitArticles(newArticles: List<Article>) {
         articles = newArticles.toList()
         notifyDataSetChanged()
-    }
+    }//保存文章，通知 RecyclerView 更新显示
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -42,6 +42,7 @@ class ArticleAdapter(
         holder.bind(article)
         holder.itemView.setOnClickListener {
             onArticleClick(article)
+            //调用 onArticleClick，把 Article 传出去
         }
     }
 
@@ -51,6 +52,7 @@ class ArticleAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(article: Article) {
+            binding.textTop.isVisible = article.isTop
             val context = binding.root.context
             val author = article.author?.takeIf { it.isNotBlank() }
                 ?: article.shareUser?.takeIf { it.isNotBlank() }

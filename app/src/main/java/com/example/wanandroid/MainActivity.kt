@@ -9,16 +9,20 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.wanandroid.databinding.ActivityMainBinding
 import com.example.wanandroid.ui.home.ArticleAdapter
+import com.example.wanandroid.ui.home.HomeBannerAdapter
 import com.example.wanandroid.ui.home.HomeUiState
 import com.example.wanandroid.ui.home.HomeViewModel
+import com.example.wanandroid.ui.search.SearchActivity
 import com.example.wanandroidlearn.ui.article.ArticleActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: HomeViewModel
+    private lateinit var homeBannerAdapter: HomeBannerAdapter
 //    private val articleAdapter = ArticleAdapter { article ->
 //        Toast.makeText(
 //            this,
@@ -55,14 +59,30 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
         //隐藏默认标题栏
         applySystemInsets()
+        binding.buttonSearchArticles.setOnClickListener {
+            startActivity(Intent(this, SearchActivity::class.java))
+        }
+        homeBannerAdapter = HomeBannerAdapter(
+            lifecycleOwner = this,
+            onBannerClick = { banner ->
+                val intent = Intent(this, ArticleActivity::class.java)
+                intent.putExtra("article_title", banner.title.orEmpty())
+                intent.putExtra("article_url", banner.url.orEmpty())
+                startActivity(intent)
+            }
+        )
+
         binding.recyclerArticles.layoutManager = LinearLayoutManager(this)
-        binding.recyclerArticles.adapter = articleAdapter
+        binding.recyclerArticles.adapter = ConcatAdapter(homeBannerAdapter, articleAdapter)
         viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
         binding.buttonRetry.setOnClickListener {
             viewModel.loadArticles()
         }
         viewModel.uiState.observe(this) { state ->
             render(state)
+        }
+        viewModel.banners.observe(this) { banners ->
+            homeBannerAdapter.submitBanners(banners)
         }
     }
 

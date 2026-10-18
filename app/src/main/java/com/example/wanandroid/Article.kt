@@ -7,5 +7,6 @@ data class Article(
     val shareUser: String? = null,
     val niceDate: String? = null,
     val chapterName: String? = null,
-    val link: String? = null
+    val link: String? = null,
+    val isTop: Boolean = false
 )

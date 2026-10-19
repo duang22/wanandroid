@@ -24,4 +24,8 @@
     <string name="search_hint">例如 Kotlin、协程</string>
     <string name="search_enter_keyword">请输入关键词</string>
     <string name="search_hot_keywords">热门搜索</string>
+    <string name="knowledge_action">体系</string>
+    <string name="knowledge_title">知识体系</string>
+    <string name="knowledge_parent_categories">一级分类</string>
+    <string name="knowledge_child_categories">子分类</string>
 </resources>

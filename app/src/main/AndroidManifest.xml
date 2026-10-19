@@ -32,6 +32,9 @@
             android:name=".ui.search.SearchActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.knowledge.KnowledgeActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

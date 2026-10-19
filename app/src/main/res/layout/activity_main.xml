@@ -23,6 +23,14 @@
             android:textSize="20sp" />
 
         <Button
+            android:id="@+id/button_knowledge"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/knowledge_action"
+            android:textColor="#FFFFFF" />
+
+        <Button
             android:id="@+id/button_search_articles"
             style="?attr/borderlessButtonStyle"
             android:layout_width="wrap_content"

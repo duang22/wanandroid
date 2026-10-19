@@ -16,6 +16,7 @@ import com.example.wanandroid.ui.home.ArticleAdapter
 import com.example.wanandroid.ui.home.HomeBannerAdapter
 import com.example.wanandroid.ui.home.HomeUiState
 import com.example.wanandroid.ui.home.HomeViewModel
+import com.example.wanandroid.ui.knowledge.KnowledgeActivity
 import com.example.wanandroid.ui.search.SearchActivity
 import com.example.wanandroidlearn.ui.article.ArticleActivity
 
@@ -59,6 +60,9 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
         //隐藏默认标题栏
         applySystemInsets()
+        binding.buttonKnowledge.setOnClickListener {
+            startActivity(Intent(this, KnowledgeActivity::class.java))
+        }
         binding.buttonSearchArticles.setOnClickListener {
             startActivity(Intent(this, SearchActivity::class.java))
         }

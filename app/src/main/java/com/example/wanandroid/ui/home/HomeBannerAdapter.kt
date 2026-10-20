@@ -3,6 +3,8 @@ package com.example.wanandroid.ui.home
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -55,13 +57,45 @@ class HomeBannerAdapter(
 
             override fun onPageScrollStateChanged(state: Int) = Unit
         })
-        binding.homeBanner.addBannerLifecycleObserver(lifecycleOwner)
+        lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onResume(owner: LifecycleOwner) {
+                updateAutoPlay(binding)
+            }
+
+            override fun onPause(owner: LifecycleOwner) {
+                binding.homeBanner.stop()
+            }
+
+            override fun onDestroy(owner: LifecycleOwner) {
+                binding.homeBanner.destroy()
+            }
+        })
         return BannerViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: BannerViewHolder, position: Int) {
         holder.binding.homeBanner.setDatas(banners)
         holder.binding.textBannerTitle.text = banners.firstOrNull()?.title.orEmpty()
+        updateAutoPlay(holder.binding)
+    }
+
+    override fun onViewAttachedToWindow(holder: BannerViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        updateAutoPlay(holder.binding)
+    }
+
+    override fun onViewDetachedFromWindow(holder: BannerViewHolder) {
+        holder.binding.homeBanner.stop()
+        super.onViewDetachedFromWindow(holder)
+    }
+
+    private fun updateAutoPlay(binding: ItemHomeBannerBinding) {
+        if (binding.root.isAttachedToWindow &&
+            lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            binding.homeBanner.start()
+        } else {
+            binding.homeBanner.stop()
+        }
     }
 
     class BannerViewHolder(val binding: ItemHomeBannerBinding) :

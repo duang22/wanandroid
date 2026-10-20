@@ -26,54 +26,49 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/knowledge_title"
+            android:text="@string/websites_title"
             android:textColor="#FFFFFF"
             android:textSize="20sp" />
     </LinearLayout>
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs_parents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/knowledge_parent_categories"
-        app:tabMode="scrollable" />
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs_children"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/knowledge_child_categories"
-        app:tabMode="scrollable" />
-
     <ProgressBar
-        android:id="@+id/progress_knowledge"
+        android:id="@+id/progress_websites"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/text_knowledge_message"
+        android:id="@+id/text_websites_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"
+        android:padding="16dp"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp" />
 
     <Button
-        android:id="@+id/button_retry_knowledge"
+        android:id="@+id/button_retry_websites"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/retry"
         android:visibility="gone" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_knowledge_articles"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="8dp" />
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="12dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_websites"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="4dp" />
+    </ScrollView>
 </LinearLayout>

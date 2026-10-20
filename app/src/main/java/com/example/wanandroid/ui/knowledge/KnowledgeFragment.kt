@@ -2,48 +2,45 @@ package com.example.wanandroid.ui.knowledge
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import android.view.View
+import androidx.fragment.app.Fragment
+import com.example.wanandroid.R
 import androidx.core.text.HtmlCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.wanandroid.data.model.KnowledgeCategory
-import com.example.wanandroid.databinding.ActivityKnowledgeBinding
+import com.example.wanandroid.databinding.FragmentKnowledgeBinding
 import com.example.wanandroid.ui.home.ArticleAdapter
 import com.example.wanandroidlearn.ui.article.ArticleActivity
 import com.google.android.material.tabs.TabLayout
 
-class KnowledgeActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityKnowledgeBinding
+class KnowledgeFragment : Fragment(R.layout.fragment_knowledge) {
+    private var _binding: FragmentKnowledgeBinding? = null
+    private val binding get() = requireNotNull(_binding)
     private lateinit var viewModel: KnowledgeViewModel
     private var renderingTabs = false
     private var renderedChildId: Int? = null
 
     private val articleAdapter = ArticleAdapter { article ->
-        val intent = Intent(this, ArticleActivity::class.java)
+        val intent = Intent(requireContext(), ArticleActivity::class.java)
         val title = HtmlCompat.fromHtml(
             article.title.orEmpty(), HtmlCompat.FROM_HTML_MODE_LEGACY
         ).toString()
         intent.putExtra("article_title", title)
         intent.putExtra("article_url", article.link.orEmpty())
+        intent.putExtra("article_id", article.id)
         startActivity(intent)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        binding = ActivityKnowledgeBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        supportActionBar?.hide()
-        applySystemInsets()
-
-        binding.recyclerKnowledgeArticles.layoutManager = LinearLayoutManager(this)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentKnowledgeBinding.bind(view)
+        renderingTabs = false
+        binding.recyclerKnowledgeArticles.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerKnowledgeArticles.adapter = articleAdapter
         viewModel = ViewModelProvider(this)[KnowledgeViewModel::class.java]
-        binding.buttonBack.setOnClickListener { finish() }
+        renderedChildId = viewModel.uiState.value?.selectedChildId
         binding.buttonRetryKnowledge.setOnClickListener { viewModel.retry() }
 
         binding.tabsParents.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -61,7 +58,7 @@ class KnowledgeActivity : AppCompatActivity() {
             override fun onTabUnselected(tab: TabLayout.Tab) = Unit
             override fun onTabReselected(tab: TabLayout.Tab) = Unit
         })
-        viewModel.uiState.observe(this) { state -> render(state) }
+        viewModel.uiState.observe(viewLifecycleOwner) { state -> render(state) }
     }
 
     private fun render(state: KnowledgeUiState) {
@@ -105,12 +102,9 @@ class KnowledgeActivity : AppCompatActivity() {
         }
     }
 
-    private fun applySystemInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
-        ViewCompat.requestApplyInsets(binding.root)
+    override fun onDestroyView() {
+        binding.recyclerKnowledgeArticles.adapter = null
+        _binding = null
+        super.onDestroyView()
     }
 }

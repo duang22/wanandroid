@@ -30,6 +30,7 @@ class SearchActivity : AppCompatActivity() {
         ).toString()
         intent.putExtra("article_title", title)
         intent.putExtra("article_url", article.link.orEmpty())
+        intent.putExtra("article_id", article.id)
         startActivity(intent)
     }//点击链接跳转
 

@@ -35,6 +35,20 @@
             android:textSize="16sp" />
 
         <Button
+            android:id="@+id/button_collect"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="88dp"
+            android:layout_height="match_parent"
+            android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="@string/collect_action"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/button_browser"
             style="?attr/borderlessButtonStyle"
             android:layout_width="88dp"
@@ -51,6 +65,14 @@
         android:layout_height="3dp"
         android:contentDescription="@string/article_loading"
         android:max="100"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/text_collect_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textColor="?android:attr/textColorSecondary"
         android:visibility="gone" />
 
     <FrameLayout

@@ -28,4 +28,24 @@
     <string name="knowledge_title">知识体系</string>
     <string name="knowledge_parent_categories">一级分类</string>
     <string name="knowledge_child_categories">子分类</string>
+    <string name="home_more">更多</string>
+    <string name="websites_title">常用网站</string>
+    <string name="account_title">账号</string>
+    <string name="login_username">玩安卓账号</string>
+    <string name="login_password">密码</string>
+    <string name="login_action">登录</string>
+    <string name="logout_action">退出登录</string>
+    <string name="check_login_action">检查登录状态</string>
+    <string name="account_current_user">当前用户：%1$s</string>
+    <string name="my_collect_title">我的收藏</string>
+    <string name="collect_action">收藏</string>
+    <string name="collect_remove">取消收藏</string>
+    <string name="collect_working">请稍候</string>
+    <string name="collect_retry">重试收藏</string>
+    <string name="collect_login_action">登录收藏</string>
+    <string name="collect_go_login">去登录</string>
+    <string name="collect_refresh">刷新</string>
+<string name="nav_home">首页</string>
+<string name="nav_mine">我的</string>
+<string name="mine_description">管理账号、收藏和常用网站</string>
 </resources>

@@ -6,6 +6,10 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import androidx.lifecycle.ViewModelProvider
+import com.example.wanandroid.ui.collect.ArticleCollectUiState
+import com.example.wanandroid.ui.collect.ArticleCollectViewModel
+import com.example.wanandroid.ui.login.LoginActivity
 import android.webkit.SslErrorHandler
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
@@ -25,6 +29,9 @@ import android.widget.Toast
 
 class ArticleActivity : AppCompatActivity() {
     private lateinit var binding: ActivityArticleBinding
+    private lateinit var collectViewModel: ArticleCollectViewModel
+    private val articleId: Int
+        get() = intent.getIntExtra(EXTRA_ARTICLE_ID, 0)
     private var currentUrl = ""
     private var pageFailed = false
     private var pageLoading = false
@@ -32,6 +39,7 @@ class ArticleActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_TITLE = "article_title"
         private const val EXTRA_URL = "article_url"
+        private const val EXTRA_ARTICLE_ID = "article_id"
         private const val STATE_CURRENT_URL = "state_current_url"
         private const val STATE_WEB_VIEW = "state_web_view"
     }
@@ -50,9 +58,38 @@ class ArticleActivity : AppCompatActivity() {
         }
         ViewCompat.requestApplyInsets(binding.root)
         binding.textArticleTitle.text = intent.getStringExtra(EXTRA_TITLE).orEmpty()
+        setupCollect()
         setupWebView()
         bindActions()
         restoreOrLoad(savedInstanceState)
+    }
+
+    private fun setupCollect() {
+        binding.buttonCollect.isVisible = articleId > 0
+        if (articleId <= 0) return
+        collectViewModel = ViewModelProvider(this)[ArticleCollectViewModel::class.java]
+        binding.buttonCollect.setOnClickListener {
+            val state = collectViewModel.uiState.value ?: return@setOnClickListener
+            when {
+                state.needsLogin -> startActivity(Intent(this, LoginActivity::class.java))
+                !state.isReady -> collectViewModel.refresh(articleId)
+                else -> collectViewModel.toggle(articleId)
+            }
+        }
+        collectViewModel.uiState.observe(this) { state -> renderCollect(state) }
+    }
+
+    private fun renderCollect(state: ArticleCollectUiState) {
+        binding.buttonCollect.isEnabled = !state.isLoading
+        binding.buttonCollect.setText(when {
+            state.isLoading -> R.string.collect_working
+            state.needsLogin -> R.string.collect_login_action
+            !state.isReady -> R.string.collect_retry
+            state.isCollected -> R.string.collect_remove
+            else -> R.string.collect_action
+        })
+        binding.textCollectMessage.text = state.message
+        binding.textCollectMessage.isVisible = state.message.isNotBlank()
     }
 
     private fun isWebUrl(url: String): Boolean {
@@ -282,6 +319,7 @@ class ArticleActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         binding.webArticle.onResume()
+        if (articleId > 0) collectViewModel.refresh(articleId)
     }
 
     override fun onDestroy() {

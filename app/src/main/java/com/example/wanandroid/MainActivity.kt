@@ -1,56 +1,29 @@
 package com.example.wanandroid
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.Lifecycle
 import com.example.wanandroid.databinding.ActivityMainBinding
-import com.example.wanandroid.ui.home.ArticleAdapter
-import com.example.wanandroid.ui.home.HomeBannerAdapter
-import com.example.wanandroid.ui.home.HomeUiState
-import com.example.wanandroid.ui.home.HomeViewModel
-import com.example.wanandroid.ui.knowledge.KnowledgeActivity
-import com.example.wanandroid.ui.search.SearchActivity
-import com.example.wanandroidlearn.ui.article.ArticleActivity
+import com.example.wanandroid.ui.home.HomeFragment
+import com.example.wanandroid.ui.knowledge.KnowledgeFragment
+import com.example.wanandroid.ui.mine.MineFragment
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var viewModel: HomeViewModel
-    private lateinit var homeBannerAdapter: HomeBannerAdapter
-//    private val articleAdapter = ArticleAdapter { article ->
-//        Toast.makeText(
-//            this,
-//            article.title.orEmpty(),
-//            Toast.LENGTH_SHORT
-//        ).show()
-//    }
-//    private val articleAdapter = ArticleAdapter { article ->
-//        val url = article.link.orEmpty().trim()
-//        if (url.isBlank()) {
-//            Toast.makeText(this, R.string.article_invalid_url, Toast.LENGTH_SHORT).show()
-//        } else {
-//            ArticleActivity.start(
-//                activity = this,
-//                title = article.title.orEmpty(),
-//                url = url
-//            )
-//        }
-//    }
-    private val articleAdapter = ArticleAdapter(
-        onArticleClick = { clickedArticle ->
-            val intent = Intent(this, ArticleActivity::class.java)
-            intent.putExtra("article_title", clickedArticle.title.orEmpty())
-            intent.putExtra("article_url", clickedArticle.link.orEmpty())
-            startActivity(intent)
+    private var selectedTabId = R.id.nav_home
+    private val tabBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            binding.bottomNavigation.selectedItemId = R.id.nav_home
         }
-    )
+    }
+
+    companion object {
+        private const val STATE_SELECTED_TAB = "selected_tab"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,62 +33,57 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
         //隐藏默认标题栏
         applySystemInsets()
-        binding.buttonKnowledge.setOnClickListener {
-            startActivity(Intent(this, KnowledgeActivity::class.java))
-        }
-        binding.buttonSearchArticles.setOnClickListener {
-            startActivity(Intent(this, SearchActivity::class.java))
-        }
-        homeBannerAdapter = HomeBannerAdapter(
-            lifecycleOwner = this,
-            onBannerClick = { banner ->
-                val intent = Intent(this, ArticleActivity::class.java)
-                intent.putExtra("article_title", banner.title.orEmpty())
-                intent.putExtra("article_url", banner.url.orEmpty())
-                startActivity(intent)
-            }
-        )
+        onBackPressedDispatcher.addCallback(this, tabBackCallback)
 
-        binding.recyclerArticles.layoutManager = LinearLayoutManager(this)
-        binding.recyclerArticles.adapter = ConcatAdapter(homeBannerAdapter, articleAdapter)
-        viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
-        binding.buttonRetry.setOnClickListener {
-            viewModel.loadArticles()
+        selectedTabId = savedInstanceState?.getInt(STATE_SELECTED_TAB) ?: R.id.nav_home
+        showTab(selectedTabId)
+        binding.bottomNavigation.selectedItemId = selectedTabId
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            showTab(item.itemId)
         }
-        viewModel.uiState.observe(this) { state ->
-            render(state)
+        binding.bottomNavigation.setOnItemReselectedListener { }
+    }
+
+    private fun showTab(itemId: Int): Boolean {
+        val tag = when (itemId) {
+            R.id.nav_home -> "home"
+            R.id.nav_knowledge -> "knowledge"
+            R.id.nav_mine -> "mine"
+            else -> return false
         }
-        viewModel.banners.observe(this) { banners ->
-            homeBannerAdapter.submitBanners(banners)
+        val manager = supportFragmentManager
+        if (manager.isStateSaved) return false
+        val target = manager.findFragmentByTag(tag) ?: when (itemId) {
+            R.id.nav_home -> HomeFragment()
+            R.id.nav_knowledge -> KnowledgeFragment()
+            else -> MineFragment()
         }
+        val transaction = manager.beginTransaction().setReorderingAllowed(true)
+        manager.fragments.forEach { fragment ->
+            transaction.hide(fragment)
+            transaction.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
+        }
+        if (target.isAdded) transaction.show(target)
+        else transaction.add(R.id.fragment_container, target, tag)
+        transaction.setMaxLifecycle(target, Lifecycle.State.RESUMED)
+        transaction.setPrimaryNavigationFragment(target)
+        transaction.commitNow()
+        selectedTabId = itemId
+        tabBackCallback.isEnabled = itemId != R.id.nav_home
+        return true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(STATE_SELECTED_TAB, selectedTabId)
+        super.onSaveInstanceState(outState)
     }
 
     private fun applySystemInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
+            WindowInsetsCompat.CONSUMED
         }
         ViewCompat.requestApplyInsets(binding.root)
-    }
-
-    private fun render(state: HomeUiState) {
-        binding.progressLoading.isVisible = state is HomeUiState.Loading
-        binding.recyclerArticles.isVisible = state is HomeUiState.Success
-        binding.layoutMessage.isVisible =
-            state is HomeUiState.Empty || state is HomeUiState.Error
-
-        when (state) {
-            HomeUiState.Loading -> Unit
-            is HomeUiState.Success -> {
-                articleAdapter.submitArticles(state.articles)
-            }
-            HomeUiState.Empty -> {
-                binding.textMessage.setText(R.string.empty_articles)
-            }
-            is HomeUiState.Error -> {
-                binding.textMessage.text = state.message
-            }
-        }
     }
 }

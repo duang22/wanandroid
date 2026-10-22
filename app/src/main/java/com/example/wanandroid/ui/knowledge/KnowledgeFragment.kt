@@ -9,6 +9,10 @@ import androidx.core.text.HtmlCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ConcatAdapter
+import com.example.wanandroid.ui.common.PageFooterAdapter
+import com.example.wanandroid.ui.common.PageFooterState
+import com.example.wanandroid.ui.common.loadMoreOnScroll
 import com.example.wanandroid.data.model.KnowledgeCategory
 import com.example.wanandroid.databinding.FragmentKnowledgeBinding
 import com.example.wanandroid.ui.home.ArticleAdapter
@@ -21,6 +25,7 @@ class KnowledgeFragment : Fragment(R.layout.fragment_knowledge) {
     private lateinit var viewModel: KnowledgeViewModel
     private var renderingTabs = false
     private var renderedChildId: Int? = null
+    private val footerAdapter = PageFooterAdapter { viewModel.loadMore() }
 
     private val articleAdapter = ArticleAdapter { article ->
         val intent = Intent(requireContext(), ArticleActivity::class.java)
@@ -38,9 +43,15 @@ class KnowledgeFragment : Fragment(R.layout.fragment_knowledge) {
         _binding = FragmentKnowledgeBinding.bind(view)
         renderingTabs = false
         binding.recyclerKnowledgeArticles.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerKnowledgeArticles.adapter = articleAdapter
+        binding.recyclerKnowledgeArticles.adapter = ConcatAdapter(articleAdapter, footerAdapter)
         viewModel = ViewModelProvider(this)[KnowledgeViewModel::class.java]
         renderedChildId = viewModel.uiState.value?.selectedChildId
+        binding.recyclerKnowledgeArticles.loadMoreOnScroll(
+            canLoad = { _binding != null && isVisible && viewModel.uiState.value?.let {
+                !it.isLoading && !it.isLoadingMore && !it.endReached && it.loadMoreError == null
+            } == true },
+            loadMore = { viewModel.loadMore() }
+        )
         binding.buttonRetryKnowledge.setOnClickListener { viewModel.retry() }
 
         binding.tabsParents.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -75,6 +86,10 @@ class KnowledgeFragment : Fragment(R.layout.fragment_knowledge) {
         binding.textKnowledgeMessage.text = state.message
         binding.buttonRetryKnowledge.isVisible = state.canRetry
         articleAdapter.submitArticles(state.articles)
+        footerAdapter.submitState(PageFooterState(
+            visible = state.articles.isNotEmpty(), isLoading = state.isLoadingMore,
+            endReached = state.endReached, error = state.loadMoreError
+        ))
         if (renderedChildId != state.selectedChildId) {
             binding.recyclerKnowledgeArticles.scrollToPosition(0)
             renderedChildId = state.selectedChildId
@@ -103,6 +118,7 @@ class KnowledgeFragment : Fragment(R.layout.fragment_knowledge) {
     }
 
     override fun onDestroyView() {
+        binding.recyclerKnowledgeArticles.clearOnScrollListeners()
         binding.recyclerKnowledgeArticles.adapter = null
         _binding = null
         super.onDestroyView()

@@ -1,6 +1,7 @@
 package com.example.wanandroid.data.repository
 
 import com.example.wanandroid.data.model.CollectedArticle
+import com.example.wanandroid.data.model.CollectedPage
 import com.example.wanandroid.data.remote.ApiClient
 import com.example.wanandroid.data.remote.ApiException
 import com.example.wanandroid.data.remote.ApiResponse
@@ -11,10 +12,14 @@ class LoginRequiredException : Exception("请先登录后使用收藏")
 class CollectRepository(
     private val service: ApiService = ApiClient.service
 ) {
-    suspend fun getMyCollections(): List<CollectedArticle> {
-        val page = checked(service.getMyCollections())
+    suspend fun getMyCollections(): List<CollectedArticle> =
+        getMyCollectionPage(page = 0).datas.orEmpty()
+
+    suspend fun getMyCollectionPage(page: Int): CollectedPage {
+        val result = checked(service.getMyCollections(page))
             ?: throw ApiException("缺少收藏列表")
-        return page.datas.orEmpty()
+        if (result.datas == null) throw ApiException("缺少收藏文章列表")
+        return result
     }
 
     suspend fun isCollected(articleId: Int): Boolean {

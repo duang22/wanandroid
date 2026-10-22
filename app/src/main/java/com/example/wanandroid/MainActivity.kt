@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, tabBackCallback)
 
         selectedTabId = savedInstanceState?.getInt(STATE_SELECTED_TAB) ?: R.id.nav_home
+        //恢复状态
         showTab(selectedTabId)
         binding.bottomNavigation.selectedItemId = selectedTabId
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         }
         if (target.isAdded) transaction.show(target)
         else transaction.add(R.id.fragment_container, target, tag)
+        //添加 fragment
         transaction.setMaxLifecycle(target, Lifecycle.State.RESUMED)
         transaction.setPrimaryNavigationFragment(target)
         transaction.commitNow()

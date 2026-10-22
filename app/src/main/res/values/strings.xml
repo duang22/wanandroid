@@ -47,5 +47,20 @@
     <string name="collect_refresh">刷新</string>
 <string name="nav_home">首页</string>
 <string name="nav_mine">我的</string>
-<string name="mine_description">管理账号、收藏和常用网站</string>
+<string name="mine_description">管理账号、收藏、阅读历史和常用网站</string>
+    <string name="history_title">阅读历史</string>
+    <string name="history_clear">清空</string>
+    <string name="history_delete">删除</string>
+    <string name="history_count">共 %1$d 条，按最近阅读排序</string>
+    <string name="history_loading">正在读取历史…</string>
+    <string name="history_empty">还没有阅读记录，去首页打开一篇文章吧</string>
+    <string name="history_clear_title">清空阅读历史？</string>
+    <string name="history_clear_message">将删除这台设备保存的全部阅读记录。</string>
+    <string name="home_load_more">加载更多</string>
+    <string name="home_more_hint">继续上拉，或点击加载更多</string>
+    <string name="home_loading_more">正在加载更多…</string>
+    <string name="home_refreshing">正在刷新首页…</string>
+    <string name="home_end_reached">已经到底了</string>
+    <string name="home_load_more_failed">加载更多失败：%1$s</string>
+    <string name="home_refresh_failed">刷新失败：%1$s；下拉可重试</string>
 </resources>

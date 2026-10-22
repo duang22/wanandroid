@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import com.example.wanandroid.R
 import com.example.wanandroid.databinding.FragmentMineBinding
 import com.example.wanandroid.ui.collect.MyCollectActivity
+import com.example.wanandroid.ui.history.ReadHistoryActivity
 import com.example.wanandroid.ui.login.LoginActivity
 import com.example.wanandroid.ui.website.WebsiteActivity
 
@@ -22,6 +23,9 @@ class MineFragment : Fragment(R.layout.fragment_mine) {
         }
         binding.buttonMyCollect.setOnClickListener {
             startActivity(Intent(requireContext(), MyCollectActivity::class.java))
+        }
+        binding.buttonReadHistory.setOnClickListener {
+            startActivity(Intent(requireContext(), ReadHistoryActivity::class.java))
         }
         binding.buttonWebsites.setOnClickListener {
             startActivity(Intent(requireContext(), WebsiteActivity::class.java))

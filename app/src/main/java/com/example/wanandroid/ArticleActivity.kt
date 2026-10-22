@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.wanandroid.ui.collect.ArticleCollectUiState
 import com.example.wanandroid.ui.collect.ArticleCollectViewModel
 import com.example.wanandroid.ui.login.LoginActivity
+import com.example.wanandroid.ui.history.ReadHistoryViewModel
 import android.webkit.SslErrorHandler
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
@@ -58,10 +59,28 @@ class ArticleActivity : AppCompatActivity() {
         }
         ViewCompat.requestApplyInsets(binding.root)
         binding.textArticleTitle.text = intent.getStringExtra(EXTRA_TITLE).orEmpty()
+        recordHistory()
         setupCollect()
         setupWebView()
         bindActions()
         restoreOrLoad(savedInstanceState)
+    }
+
+    private fun recordHistory() {
+        val url = intent.getStringExtra(EXTRA_URL).orEmpty().trim()
+        if (!isWebUrl(url)) return
+        val historyViewModel = ViewModelProvider(this)[ReadHistoryViewModel::class.java]
+        historyViewModel.errorMessage.observe(this) { message ->
+            if (message.isNotBlank()) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                historyViewModel.clearError()
+            }
+        }
+        historyViewModel.record(
+            url = url,
+            title = intent.getStringExtra(EXTRA_TITLE).orEmpty(),
+            articleId = articleId
+        )
     }
 
     private fun setupCollect() {

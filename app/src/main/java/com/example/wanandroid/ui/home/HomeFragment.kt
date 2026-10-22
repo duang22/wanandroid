@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.wanandroid.R
 import com.example.wanandroid.databinding.FragmentHomeBinding
 import com.example.wanandroid.ui.search.SearchActivity
@@ -19,26 +20,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var viewModel: HomeViewModel
     private lateinit var articleAdapter: ArticleAdapter
     private lateinit var homeBannerAdapter: HomeBannerAdapter
+    private lateinit var loadMoreAdapter: HomeLoadMoreAdapter
+    private var lastRefreshVersion = 0
 
-//    private val articleAdapter = ArticleAdapter { article ->
-//        Toast.makeText(
-//            this,
-//            article.title.orEmpty(),
-//            Toast.LENGTH_SHORT
-//        ).show()
-//    }
-//    private val articleAdapter = ArticleAdapter { article ->
-//        val url = article.link.orEmpty().trim()
-//        if (url.isBlank()) {
-//            Toast.makeText(this, R.string.article_invalid_url, Toast.LENGTH_SHORT).show()
-//        } else {
-//            ArticleActivity.start(
-//                activity = this,
-//                title = article.title.orEmpty(),
-//                url = url
-//            )
-//        }
-//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -60,32 +44,69 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 startActivity(intent)
             }
         )
+        loadMoreAdapter = HomeLoadMoreAdapter { viewModel.loadMore() }
         binding.recyclerArticles.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerArticles.adapter = ConcatAdapter(homeBannerAdapter, articleAdapter)
+        binding.recyclerArticles.adapter = ConcatAdapter(
+            homeBannerAdapter, articleAdapter, loadMoreAdapter
+        )
+        setupPagination()
+        binding.swipeRefresh.setOnRefreshListener { viewModel.refresh() }
         binding.buttonSearchArticles.setOnClickListener {
             startActivity(Intent(requireContext(), SearchActivity::class.java))
         }
-        binding.buttonRetry.setOnClickListener { viewModel.loadArticles() }
+        binding.buttonRetry.setOnClickListener { viewModel.refresh() }
         viewModel.uiState.observe(viewLifecycleOwner) { state -> render(state) }
         viewModel.banners.observe(viewLifecycleOwner) { banners ->
             homeBannerAdapter.submitBanners(banners)
         }
     }
 
+    private fun setupPagination() {
+        binding.recyclerArticles.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy <= 0) return
+                val manager = recyclerView.layoutManager as LinearLayoutManager
+                if (manager.findLastVisibleItemPosition() < manager.itemCount - 3) return
+                recyclerView.post {
+                    val currentBinding = _binding ?: return@post
+                    if (currentBinding.recyclerArticles !== recyclerView || !isVisible) return@post
+                    val state = viewModel.uiState.value as? HomeUiState.Success ?: return@post
+                    if (state.loadMoreError == null) viewModel.loadMore()
+                }
+            }
+        })
+    }
+
     private fun render(state: HomeUiState) {
+        val success = state as? HomeUiState.Success
         binding.progressLoading.isVisible = state is HomeUiState.Loading
-        binding.recyclerArticles.isVisible = state is HomeUiState.Success
+        binding.swipeRefresh.isVisible = success != null
+        binding.swipeRefresh.isEnabled =
+            state !is HomeUiState.Loading && success?.isLoadingMore != true
+        binding.swipeRefresh.isRefreshing = success?.isRefreshing == true
         binding.layoutMessage.isVisible =
             state is HomeUiState.Empty || state is HomeUiState.Error
+        binding.textRefreshError.isVisible = success?.refreshError != null
+        binding.textRefreshError.text = success?.refreshError?.let {
+            getString(R.string.home_refresh_failed, it)
+        }.orEmpty()
+        loadMoreAdapter.submitState(success)
         when (state) {
             HomeUiState.Loading -> Unit
-            is HomeUiState.Success -> articleAdapter.submitArticles(state.articles)
+            is HomeUiState.Success -> {
+                val returnToTop = lastRefreshVersion > 0 &&
+                    lastRefreshVersion != state.refreshVersion
+                lastRefreshVersion = state.refreshVersion
+                articleAdapter.submitArticles(state.articles)
+                if (returnToTop) binding.recyclerArticles.scrollToPosition(0)
+            }
             HomeUiState.Empty -> binding.textMessage.setText(R.string.empty_articles)
             is HomeUiState.Error -> binding.textMessage.text = state.message
         }
     }
 
     override fun onDestroyView() {
+        binding.recyclerArticles.clearOnScrollListeners()
         binding.recyclerArticles.adapter = null
         _binding = null
         super.onDestroyView()

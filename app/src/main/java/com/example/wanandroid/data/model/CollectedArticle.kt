@@ -9,7 +9,8 @@ data class CollectedArticle(
 )
 
 data class CollectedPage(
-    val datas: List<CollectedArticle>? = null
+    val datas: List<CollectedArticle>? = null,
+    val over: Boolean = false
 )
 
 data class CollectProfile(

@@ -21,8 +21,15 @@ class ArticleAdapter(
 
     @SuppressLint("NotifyDataSetChanged")
     fun submitArticles(newArticles: List<Article>) {
+        if (newArticles == articles) return
+        val oldSize = articles.size
+        val isAppend = newArticles.size > oldSize && newArticles.take(oldSize) == articles
         articles = newArticles.toList()
-        notifyDataSetChanged()
+        if (isAppend) {
+            notifyItemRangeInserted(oldSize, articles.size - oldSize)
+        } else {
+            notifyDataSetChanged()
+        }
     }//保存文章，通知 RecyclerView 更新显示
 
     override fun onCreateViewHolder(

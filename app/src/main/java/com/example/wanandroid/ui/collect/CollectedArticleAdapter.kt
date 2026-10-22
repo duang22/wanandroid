@@ -16,11 +16,25 @@ class CollectedArticleAdapter(
     private var articles: List<CollectedArticle> = emptyList()
     private var isLoading = false
 
+    init { stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY }
+
     @SuppressLint("NotifyDataSetChanged")
     fun submitArticles(newArticles: List<CollectedArticle>, loading: Boolean) {
+        if (newArticles == articles && loading == isLoading) return
+        val oldSize = articles.size
+        val loadingChanged = loading != isLoading
+        val sameArticles = newArticles == articles
+        val isAppend = newArticles.size > oldSize && newArticles.take(oldSize) == articles
         articles = newArticles.toList()
         isLoading = loading
-        notifyDataSetChanged()
+        when {
+            sameArticles -> if (loadingChanged) notifyItemRangeChanged(0, itemCount)
+            isAppend -> {
+                if (loadingChanged && oldSize > 0) notifyItemRangeChanged(0, oldSize)
+                notifyItemRangeInserted(oldSize, articles.size - oldSize)
+            }
+            else -> notifyDataSetChanged()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {

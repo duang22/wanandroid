@@ -14,6 +14,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ConcatAdapter
+import com.example.wanandroid.ui.common.PageFooterAdapter
+import com.example.wanandroid.ui.common.PageFooterState
+import com.example.wanandroid.ui.common.loadMoreOnScroll
 import com.example.wanandroid.R
 import com.example.wanandroid.databinding.ActivitySearchBinding
 import com.example.wanandroid.ui.home.ArticleAdapter
@@ -22,6 +26,8 @@ import com.example.wanandroidlearn.ui.article.ArticleActivity
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private lateinit var viewModel: SearchViewModel
+    private var renderedVersion = 0
+    private val footerAdapter = PageFooterAdapter { viewModel.loadMore() }
 
     private val articleAdapter = ArticleAdapter { article ->
         val intent = Intent(this, ArticleActivity::class.java)
@@ -43,8 +49,15 @@ class SearchActivity : AppCompatActivity() {
         applySystemInsets()
 
         binding.recyclerResults.layoutManager = LinearLayoutManager(this)
-        binding.recyclerResults.adapter = articleAdapter
+        binding.recyclerResults.adapter = ConcatAdapter(articleAdapter, footerAdapter)
         viewModel = ViewModelProvider(this)[SearchViewModel::class.java]
+        renderedVersion = viewModel.uiState.value?.requestVersion ?: 0
+        binding.recyclerResults.loadMoreOnScroll(
+            canLoad = { viewModel.uiState.value?.let {
+                !it.isLoading && !it.isLoadingMore && !it.endReached && it.loadMoreError == null
+            } == true },
+            loadMore = { viewModel.loadMore() }
+        )
 
         binding.buttonBack.setOnClickListener { finish() }
         binding.buttonSearch.setOnClickListener { performSearch() }
@@ -74,12 +87,20 @@ class SearchActivity : AppCompatActivity() {
     private fun render(state: SearchUiState) {
         binding.progressSearch.isVisible = state.isLoading
         binding.textSearchMessage.text = state.message
-        binding.buttonSearch.isEnabled = !state.isLoading
-        binding.editKeyword.isEnabled = !state.isLoading
+        binding.buttonSearch.isEnabled = true
+        binding.editKeyword.isEnabled = true
         binding.chipHotKeywords.children.forEach { chip ->
-            chip.isEnabled = !state.isLoading
+            chip.isEnabled = true
         }
         articleAdapter.submitArticles(state.articles)
+        footerAdapter.submitState(PageFooterState(
+            visible = state.articles.isNotEmpty(), isLoading = state.isLoadingMore,
+            endReached = state.endReached, error = state.loadMoreError
+        ))
+        if (renderedVersion != state.requestVersion) {
+            binding.recyclerResults.scrollToPosition(0)
+            renderedVersion = state.requestVersion
+        }
         //提交文章，adapter 会显示文章叫 recycleview 刷新
     }
 
@@ -101,7 +122,7 @@ class SearchActivity : AppCompatActivity() {
             val chip = Chip(this).apply {
                 text = name
                 isCheckable = false
-                isEnabled = viewModel.uiState.value?.isLoading != true
+                isEnabled = true
                 setOnClickListener {
                     binding.editKeyword.error = null
                     binding.editKeyword.setText(name)

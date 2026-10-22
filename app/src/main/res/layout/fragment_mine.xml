@@ -46,6 +46,13 @@
                 android:text="@string/my_collect_title" />
 
             <Button
+                android:id="@+id/button_read_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/history_title" />
+
+            <Button
                 android:id="@+id/button_websites"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

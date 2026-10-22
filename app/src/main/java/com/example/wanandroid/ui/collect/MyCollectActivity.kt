@@ -10,6 +10,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ConcatAdapter
+import com.example.wanandroid.ui.common.PageFooterAdapter
+import com.example.wanandroid.ui.common.PageFooterState
+import com.example.wanandroid.ui.common.loadMoreOnScroll
 import com.example.wanandroid.data.model.CollectedArticle
 import com.example.wanandroid.databinding.ActivityMyCollectBinding
 import com.example.wanandroid.ui.login.LoginActivity
@@ -18,6 +22,7 @@ import com.example.wanandroidlearn.ui.article.ArticleActivity
 class MyCollectActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMyCollectBinding
     private lateinit var viewModel: MyCollectViewModel
+    private val footerAdapter = PageFooterAdapter { viewModel.loadMore() }
     private val articleAdapter = CollectedArticleAdapter(
         onArticleClick = { article -> openArticle(article) },
         onRemoveClick = { article -> viewModel.remove(article) }
@@ -33,19 +38,32 @@ class MyCollectActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[MyCollectViewModel::class.java]
         binding.recyclerMyCollect.layoutManager = LinearLayoutManager(this)
-        binding.recyclerMyCollect.adapter = articleAdapter
+        binding.recyclerMyCollect.adapter = ConcatAdapter(articleAdapter, footerAdapter)
+        binding.recyclerMyCollect.loadMoreOnScroll(
+            canLoad = { viewModel.uiState.value?.let {
+                !it.isLoading && !it.isLoadingMore && !it.isRemoving && !it.needsLogin &&
+                    !it.endReached && it.loadMoreError == null
+            } == true },
+            loadMore = { viewModel.loadMore() }
+        )
         binding.buttonBack.setOnClickListener { finish() }
         binding.buttonRefreshCollect.setOnClickListener { viewModel.loadCollections() }
         binding.buttonLoginToCollect.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }
         viewModel.uiState.observe(this) { state ->
-            binding.progressMyCollect.isVisible = state.isLoading
+            val busy = state.isLoading || state.isLoadingMore || state.isRemoving
+            binding.progressMyCollect.isVisible = state.isLoading || state.isRemoving
             binding.textMyCollectMessage.text = state.message
             binding.buttonLoginToCollect.isVisible = state.needsLogin
-            binding.buttonLoginToCollect.isEnabled = !state.isLoading
-            binding.buttonRefreshCollect.isEnabled = !state.isLoading
-            articleAdapter.submitArticles(state.articles, state.isLoading)
+            binding.buttonLoginToCollect.isEnabled = !busy
+            binding.buttonRefreshCollect.isEnabled = !busy
+            articleAdapter.submitArticles(state.articles, busy)
+            footerAdapter.submitState(PageFooterState(
+                visible = state.articles.isNotEmpty() && !state.needsLogin,
+                isLoading = state.isLoadingMore, endReached = state.endReached,
+                error = state.loadMoreError, enabled = !busy
+            ))
         }
     }
 

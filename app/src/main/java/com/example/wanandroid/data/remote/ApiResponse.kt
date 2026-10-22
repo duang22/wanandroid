@@ -11,7 +11,8 @@ data class ApiResponse<T>(
 )
 
 data class ArticlePage(
-    val datas: List<Article>? = null
+    val datas: List<Article>? = null,
+    val over: Boolean = false
 )
 
 class ApiException(message: String) : Exception(message)

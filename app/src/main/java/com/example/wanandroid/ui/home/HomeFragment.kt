@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.wanandroid.ui.history.ReadHistoryViewModel
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -58,6 +59,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         viewModel.uiState.observe(viewLifecycleOwner) { state -> render(state) }
         viewModel.banners.observe(viewLifecycleOwner) { banners ->
             homeBannerAdapter.submitBanners(banners)
+        }
+        val historyViewModel = ViewModelProvider(this)[ReadHistoryViewModel::class.java]
+        historyViewModel.readUrls.observe(viewLifecycleOwner) { urls ->
+            articleAdapter.submitReadUrls(urls)
         }
     }
 

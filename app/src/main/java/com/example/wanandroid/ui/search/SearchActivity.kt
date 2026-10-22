@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.example.wanandroid.ui.history.ReadHistoryViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ConcatAdapter
 import com.example.wanandroid.ui.common.PageFooterAdapter
@@ -72,6 +73,10 @@ class SearchActivity : AppCompatActivity() {
         viewModel.uiState.observe(this) { state -> render(state) }
         viewModel.hotKeywords.observe(this) { keywords ->
             renderHotKeywords(keywords)
+        }
+        val historyViewModel = ViewModelProvider(this)[ReadHistoryViewModel::class.java]
+        historyViewModel.readUrls.observe(this) { urls ->
+            articleAdapter.submitReadUrls(urls)
         }
     }
 

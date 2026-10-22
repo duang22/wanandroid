@@ -4,14 +4,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.map
 import com.example.wanandroid.data.local.ReadRecord
 import com.example.wanandroid.data.repository.ReadHistoryRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-class ReadHistoryViewModel : ViewModel() {
-    private val repository = ReadHistoryRepository()
+class ReadHistoryViewModel(
+    private val repository: ReadHistoryRepository = ReadHistoryRepository()
+) : ViewModel() {
     val records: LiveData<List<ReadRecord>> = repository.records
+    val readUrls: LiveData<Set<String>> = records.map { records ->
+        records.map { it.url.trim() }.filter { it.isNotEmpty() }.toSet()
+    }
     private val _errorMessage = MutableLiveData("")
     val errorMessage: LiveData<String> = _errorMessage
     private var hasRecorded = false

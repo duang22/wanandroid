@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.text.HtmlCompat
+import androidx.core.content.res.use
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wanandroid.Article
 import com.example.wanandroid.R
@@ -14,6 +15,7 @@ class ArticleAdapter(
     //这是个函数，保存 article 不返回
 ) : RecyclerView.Adapter<ArticleAdapter.ArticleViewHolder>() {
     private var articles: List<Article> = emptyList()
+    private var readUrls: Set<String> = emptySet()
 
     init {
         stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
@@ -32,6 +34,16 @@ class ArticleAdapter(
         }
     }//保存文章，通知 RecyclerView 更新显示
 
+    fun submitReadUrls(urls: Set<String>) {
+        if (readUrls == urls) return
+        val previous = readUrls
+        readUrls = urls.toSet()
+        articles.forEachIndexed { position, article ->
+            val url = article.link.orEmpty().trim()
+            if ((url in previous) != (url in readUrls)) notifyItemChanged(position)
+        }
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -46,7 +58,7 @@ class ArticleAdapter(
 
     override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
         val article=articles[position]
-        holder.bind(article)
+        holder.bind(article, article.link.orEmpty().trim() in readUrls)
         holder.itemView.setOnClickListener {
             onArticleClick(article)
             //调用 onArticleClick，把 Article 传出去
@@ -58,7 +70,13 @@ class ArticleAdapter(
     class ArticleViewHolder(private val binding: ItemArticleBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(article: Article) {
+        private val unreadTitleColors = binding.textTitle.textColors
+        private val readTitleColors = binding.root.context.obtainStyledAttributes(
+            intArrayOf(android.R.attr.textColorSecondary)
+        ).use { it.getColorStateList(0) ?: unreadTitleColors }
+
+        fun bind(article: Article, isRead: Boolean) {
+            binding.textTitle.setTextColor(if (isRead) readTitleColors else unreadTitleColors)
             binding.textTop.isVisible = article.isTop
             val context = binding.root.context
             val author = article.author?.takeIf { it.isNotBlank() }

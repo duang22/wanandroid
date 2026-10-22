@@ -8,6 +8,7 @@ import com.example.wanandroid.R
 import androidx.core.text.HtmlCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.example.wanandroid.ui.history.ReadHistoryViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ConcatAdapter
 import com.example.wanandroid.ui.common.PageFooterAdapter
@@ -70,6 +71,10 @@ class KnowledgeFragment : Fragment(R.layout.fragment_knowledge) {
             override fun onTabReselected(tab: TabLayout.Tab) = Unit
         })
         viewModel.uiState.observe(viewLifecycleOwner) { state -> render(state) }
+        val historyViewModel = ViewModelProvider(this)[ReadHistoryViewModel::class.java]
+        historyViewModel.readUrls.observe(viewLifecycleOwner) { urls ->
+            articleAdapter.submitReadUrls(urls)
+        }
     }
 
     private fun render(state: KnowledgeUiState) {

@@ -167,10 +167,5 @@ JVM 单元测试覆盖 Retrofit 请求参数、业务响应解析和接口错误
 - 登录会话通过 OkHttp `CookieJar` 管理，持久化有效的持久 Cookie，退出时清理本地会话。
 - 最近一次本地 `lintDebug` 检查报告了 Glide `NotificationTarget` 引发的 `NotificationPermission` 问题，该静态检查项仍待处理。
 
-## 数据来源与学习参考
 
-- [玩安卓开放 API](https://www.wanandroid.com/blog/show/2)：文章、Banner、分类、账号与收藏接口。
-- [aka-zoe/WanAndroid](https://github.com/aka-zoe/WanAndroid)：学习参考项目。
-- [jzh1996/mvvm](https://github.com/jzh1996/mvvm)：学习参考项目。
 
-感谢玩安卓提供开放接口，以及参考项目作者的分享。
